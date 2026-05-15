@@ -1,4 +1,4 @@
-const API = "http://localhost:3000";
+const API = "https://brothers-os.onrender.com";
 
 const tema = localStorage.getItem("tema");
 

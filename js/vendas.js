@@ -2,7 +2,7 @@ if(localStorage.getItem("logado") !== "sim"){
     window.location.href = "../index.html";
 }
 
-const API = "http://localhost:3000";
+const API = "https://brothers-os.onrender.com";
 
 if(localStorage.getItem("tema") === "light"){
     document.body.classList.add("light");
