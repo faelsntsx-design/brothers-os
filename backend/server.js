@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,160 +8,240 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const dbPath = path.join(__dirname, "db.json");
-
-function lerDB(){
-    if(!fs.existsSync(dbPath)){
-        fs.writeFileSync(dbPath, JSON.stringify({
-            ordens: [],
-            vendas: [],
-            celulares: []
-        }, null, 2));
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
     }
+});
 
-    return JSON.parse(fs.readFileSync(dbPath, "utf8"));
-}
+/* TESTE */
 
-function salvarDB(db){
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-}
+app.get("/", (req, res) => {
+    res.send("BROTHERS API ONLINE COM SUPABASE");
+});
 
 /* ORDENS */
 
-app.get("/ordens", (req, res) => {
-    const db = lerDB();
-    res.json(db.ordens.sort((a,b) => b.id - a.id));
+app.get("/ordens", async (req, res) => {
+    try{
+        const result = await pool.query("SELECT * FROM ordens ORDER BY id DESC");
+        res.json(result.rows);
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.post("/ordens", (req, res) => {
-    const db = lerDB();
+app.post("/ordens", async (req, res) => {
+    try{
+        const os = req.body;
+        const id = Date.now();
 
-    const nova = {
-        id: Date.now(),
-        ...req.body
-    };
+        await pool.query(
+            `INSERT INTO ordens 
+            (id, cliente, telefone, aparelho, modelo, defeito, valor, valorPeca, maoObra, fornecedor, obsPeca, status, pagamento, obs, data)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+            [
+                id,
+                os.cliente,
+                os.telefone,
+                os.aparelho,
+                os.modelo,
+                os.defeito,
+                os.valor,
+                os.valorPeca,
+                os.maoObra,
+                os.fornecedor,
+                os.obsPeca,
+                os.status,
+                os.pagamento || "Pendente",
+                os.obs,
+                os.data
+            ]
+        );
 
-    db.ordens.unshift(nova);
-    salvarDB(db);
-
-    res.json(nova);
+        res.json({ id, message:"Ordem criada" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.put("/ordens/:id", (req, res) => {
-    const db = lerDB();
-    const id = Number(req.params.id);
+app.put("/ordens/:id", async (req, res) => {
+    try{
+        const atual = await pool.query("SELECT * FROM ordens WHERE id = $1", [req.params.id]);
 
-    db.ordens = db.ordens.map(os => {
-        if(os.id === id){
-            return { ...os, ...req.body };
+        if(atual.rows.length === 0){
+            return res.status(404).json({ error:"Ordem não encontrada" });
         }
 
-        return os;
-    });
+        const os = {
+            ...atual.rows[0],
+            ...req.body
+        };
 
-    salvarDB(db);
-    res.json({ message:"Ordem atualizada" });
+        await pool.query(
+            `UPDATE ordens SET
+            cliente=$1, telefone=$2, aparelho=$3, modelo=$4, defeito=$5,
+            valor=$6, valorPeca=$7, maoObra=$8, fornecedor=$9, obsPeca=$10,
+            status=$11, pagamento=$12, obs=$13, data=$14
+            WHERE id=$15`,
+            [
+                os.cliente,
+                os.telefone,
+                os.aparelho,
+                os.modelo,
+                os.defeito,
+                os.valor,
+                os.valorpeca || os.valorPeca,
+                os.maoobra || os.maoObra,
+                os.fornecedor,
+                os.obspeca || os.obsPeca,
+                os.status,
+                os.pagamento,
+                os.obs,
+                os.data,
+                req.params.id
+            ]
+        );
+
+        res.json({ message:"Ordem atualizada" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.delete("/ordens/:id", (req, res) => {
-    const db = lerDB();
-    const id = Number(req.params.id);
-
-    db.ordens = db.ordens.filter(os => os.id !== id);
-
-    salvarDB(db);
-    res.json({ message:"Ordem removida" });
+app.delete("/ordens/:id", async (req, res) => {
+    try{
+        await pool.query("DELETE FROM ordens WHERE id=$1", [req.params.id]);
+        res.json({ message:"Ordem removida" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
 /* VENDAS */
 
-app.get("/vendas", (req, res) => {
-    const db = lerDB();
-    res.json(db.vendas.sort((a,b) => b.id - a.id));
+app.get("/vendas", async (req, res) => {
+    try{
+        const result = await pool.query("SELECT * FROM vendas ORDER BY id DESC");
+        res.json(result.rows);
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.post("/vendas", (req, res) => {
-    const db = lerDB();
+app.post("/vendas", async (req, res) => {
+    try{
+        const venda = req.body;
+        const id = Date.now();
 
-    const venda = {
-        id: Date.now(),
-        ...req.body
-    };
+        await pool.query(
+            `INSERT INTO vendas 
+            (id, produto, categoria, valor, pagamento, data)
+            VALUES ($1,$2,$3,$4,$5,$6)`,
+            [
+                id,
+                venda.produto,
+                venda.categoria,
+                venda.valor,
+                venda.pagamento,
+                venda.data
+            ]
+        );
 
-    db.vendas.unshift(venda);
-    salvarDB(db);
-
-    res.json(venda);
+        res.json({ id, message:"Venda criada" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.delete("/vendas/:id", (req, res) => {
-    const db = lerDB();
-    const id = Number(req.params.id);
-
-    db.vendas = db.vendas.filter(venda => venda.id !== id);
-
-    salvarDB(db);
-    res.json({ message:"Venda removida" });
+app.delete("/vendas/:id", async (req, res) => {
+    try{
+        await pool.query("DELETE FROM vendas WHERE id=$1", [req.params.id]);
+        res.json({ message:"Venda removida" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
 /* CELULARES */
 
-app.get("/celulares", (req, res) => {
-    const db = lerDB();
-    res.json(db.celulares.sort((a,b) => b.id - a.id));
+app.get("/celulares", async (req, res) => {
+    try{
+        const result = await pool.query("SELECT * FROM celulares ORDER BY id DESC");
+        res.json(result.rows);
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.post("/celulares", (req, res) => {
-    const db = lerDB();
+app.post("/celulares", async (req, res) => {
+    try{
+        const c = req.body;
+        const id = Date.now();
 
-    const celular = {
-        id: Date.now(),
-        status: "Disponível",
-        garantia: "3 meses",
-        ...req.body
-    };
+        await pool.query(
+            `INSERT INTO celulares 
+            (id, marca, modelo, memoria, cor, estado, valorCompra, valorVenda, status, observacao, comprador, cpfComprador, telefoneComprador, dataCadastro, dataVenda, garantia)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+            [
+                id,
+                c.marca,
+                c.modelo,
+                c.memoria,
+                c.cor,
+                c.estado,
+                c.valorCompra,
+                c.valorVenda,
+                "Disponível",
+                c.observacao,
+                "",
+                "",
+                "",
+                c.dataCadastro,
+                "",
+                "3 meses"
+            ]
+        );
 
-    db.celulares.unshift(celular);
-    salvarDB(db);
-
-    res.json(celular);
+        res.json({ id, message:"Celular cadastrado" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.put("/celulares/:id/vender", (req, res) => {
-    const db = lerDB();
-    const id = Number(req.params.id);
+app.put("/celulares/:id/vender", async (req, res) => {
+    try{
+        await pool.query(
+            `UPDATE celulares SET
+            status='Vendido',
+            comprador=$1,
+            cpfComprador=$2,
+            telefoneComprador=$3,
+            dataVenda=$4
+            WHERE id=$5`,
+            [
+                req.body.comprador,
+                req.body.cpfComprador,
+                req.body.telefoneComprador,
+                req.body.dataVenda,
+                req.params.id
+            ]
+        );
 
-    db.celulares = db.celulares.map(celular => {
-        if(celular.id === id){
-            return {
-                ...celular,
-                status: "Vendido",
-                comprador: req.body.comprador,
-                cpfComprador: req.body.cpfComprador,
-                telefoneComprador: req.body.telefoneComprador,
-                dataVenda: req.body.dataVenda
-            };
-        }
-
-        return celular;
-    });
-
-    salvarDB(db);
-    res.json({ message:"Celular vendido" });
+        res.json({ message:"Celular vendido" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
-app.delete("/celulares/:id", (req, res) => {
-    const db = lerDB();
-    const id = Number(req.params.id);
-
-    db.celulares = db.celulares.filter(celular => celular.id !== id);
-
-    salvarDB(db);
-    res.json({ message:"Celular removido" });
-});
-
-app.get("/", (req, res) => {
-    res.send("BROTHERS API ONLINE");
+app.delete("/celulares/:id", async (req, res) => {
+    try{
+        await pool.query("DELETE FROM celulares WHERE id=$1", [req.params.id]);
+        res.json({ message:"Celular removido" });
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
 });
 
 app.listen(PORT, () => {
