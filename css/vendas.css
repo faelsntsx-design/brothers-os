@@ -1,0 +1,304 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    background:#111;
+    color:white;
+    overflow-x:hidden;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:290px;
+    min-height:100vh;
+    padding:28px;
+    background:rgba(28,28,28,0.9);
+    border-right:1px solid rgba(255,255,255,0.08);
+}
+
+.brand{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-bottom:45px;
+}
+
+.brand-icon{
+    width:48px;
+    height:48px;
+    border-radius:16px;
+    background:white;
+    color:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:800;
+}
+
+.brand h1{
+    font-size:19px;
+}
+
+.brand p{
+    color:#aaa;
+    font-size:13px;
+}
+
+nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+nav a{
+    height:48px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:0 16px;
+    border-radius:16px;
+    text-decoration:none;
+    color:#aaa;
+    font-weight:500;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+nav a.active,
+nav a:hover{
+    background:white;
+    color:#111;
+    transform:translateX(4px);
+}
+
+.main{
+    flex:1;
+    padding:36px;
+}
+
+.eyebrow{
+    color:#c9a86a;
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.topbar h2{
+    font-size:38px;
+    margin:10px 0;
+    letter-spacing:-1px;
+}
+
+.topbar p{
+    color:#aaa;
+}
+
+/* CARDS */
+
+.form-card,
+.panel{
+    margin-top:25px;
+    padding:28px;
+    border-radius:28px;
+    background:rgba(28,28,28,0.9);
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 25px 60px rgba(0,0,0,0.25);
+}
+
+.panel-head h3{
+    font-size:24px;
+}
+
+/* FORM */
+
+form{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+}
+
+input,
+select{
+    height:54px;
+    border:none;
+    background:#202020;
+    border-radius:16px;
+    padding:0 16px;
+    outline:none;
+    color:white;
+    font-size:15px;
+}
+
+input::placeholder{
+    color:#888;
+}
+
+button{
+    height:54px;
+    border:none;
+    border-radius:16px;
+    background:white;
+    color:#111;
+    font-weight:800;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:translateY(-3px);
+}
+
+/* LISTA */
+
+#listaVendas{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-top:20px;
+}
+
+.venda-item{
+    padding:20px;
+    border-radius:22px;
+    background:#202020;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    transition:0.3s;
+}
+
+.venda-item:hover{
+    background:#292929;
+    transform:scale(1.01);
+}
+
+.venda-item strong{
+    font-size:17px;
+}
+
+.venda-item p{
+    color:#aaa;
+    margin-top:5px;
+}
+
+.delete-btn{
+    background:#c62828;
+    color:white;
+    padding:12px 16px;
+    border-radius:14px;
+    font-weight:700;
+}
+
+.delete-btn:hover{
+    transform:none;
+}
+
+/* LIGHT MODE */
+
+body.light{
+    background:#f4f1ec;
+    color:#171717;
+}
+
+body.light .sidebar,
+body.light .form-card,
+body.light .panel{
+    background:rgba(255,255,255,0.9);
+    border-color:rgba(0,0,0,0.06);
+}
+
+body.light nav a{
+    color:#666;
+}
+
+body.light nav a.active,
+body.light nav a:hover{
+    background:#111;
+    color:white;
+}
+
+body.light .brand-icon{
+    background:#111;
+    color:white;
+}
+
+body.light .brand p,
+body.light .topbar p,
+body.light .venda-item p{
+    color:#777;
+}
+
+body.light input,
+body.light select,
+body.light .venda-item{
+    background:#f2eee8;
+    color:#111;
+}
+
+body.light button{
+    background:#111;
+    color:white;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:900px){
+    body{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        min-height:auto;
+    }
+
+    .venda-item{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}
+.cards-vendas{
+    margin-top:28px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:16px;
+}
+
+.card-venda{
+    padding:24px;
+    border-radius:24px;
+    background:rgba(28,28,28,0.9);
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 20px 50px rgba(0,0,0,0.22);
+}
+
+.card-venda span{
+    color:#aaa;
+    font-size:14px;
+    font-weight:700;
+}
+
+.card-venda h3{
+    margin-top:12px;
+    font-size:28px;
+    letter-spacing:-1px;
+}
+
+body.light .card-venda{
+    background:rgba(255,255,255,0.9);
+    border-color:rgba(0,0,0,0.06);
+}
+
+body.light .card-venda span{
+    color:#777;
+}

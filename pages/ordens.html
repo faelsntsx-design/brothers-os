@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BROTHERS OS • Ordens</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/ordens.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a class="active"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <span class="eyebrow">Ordens de serviço</span>
+        <h2>Cadastrar manutenção</h2>
+        <p>Registre, acompanhe e atualize seus serviços.</p>
+    </div>
+</header>
+
+<section class="mini-stats">
+    <div><strong id="totalGeral">0</strong><span>Total</span></div>
+    <div><strong id="totalReparo">0</strong><span>Em reparo</span></div>
+    <div><strong id="totalPronto">0</strong><span>Prontos</span></div>
+    <div><strong id="totalEntregue">0</strong><span>Entregues</span></div>
+</section>
+
+<section class="grid">
+
+<form class="form-card" id="formOS">
+
+    <h3 id="tituloForm">Nova Ordem</h3>
+
+    <input type="hidden" id="editId">
+
+    <div class="form-grid">
+        <input id="cliente" placeholder="Nome do cliente" required>
+        <input id="telefone" placeholder="WhatsApp do cliente" required>
+        <input id="aparelho" placeholder="Aparelho">
+        <input id="modelo" placeholder="Modelo">
+        <input id="defeito" placeholder="Defeito relatado">
+        <input id="valorPeca" placeholder="Valor da peça R$">
+<input id="maoObra" placeholder="Mão de obra R$">
+<input id="fornecedor" placeholder="Fornecedor da peça">
+<input id="valor" placeholder="Total cobrado R$" readonly>
+    </div>
+
+    <select id="status">
+        <option>Recebido</option>
+        <option>Diagnóstico</option>
+        <option>Aguardando aprovação</option>
+        <option>Em reparo</option>
+        <option>Pronto</option>
+        <option>Entregue</option>
+    </select>
+
+    <textarea id="obs" placeholder="Observações"></textarea>
+    <textarea id="obsPeca" placeholder="Observação da peça / compra"></textarea>
+
+    <button type="submit" id="btnSalvar">
+        <i data-lucide="save"></i>
+        Salvar ordem
+    </button>
+
+    <button type="button" class="cancel-btn" onclick="cancelarEdicao()">
+        Cancelar edição
+    </button>
+
+</form>
+
+<section class="list-card">
+    <div class="list-head">
+        <h3>Ordens cadastradas</h3>
+        <span id="totalOS">0 OS</span>
+    </div>
+
+    <div class="filters">
+        <input id="busca" placeholder="Buscar cliente, aparelho ou defeito..." oninput="renderizar()">
+
+        <select id="filtroStatus" onchange="renderizar()">
+            <option value="">Todos os status</option>
+            <option>Recebido</option>
+            <option>Diagnóstico</option>
+            <option>Aguardando aprovação</option>
+            <option>Em reparo</option>
+            <option>Pronto</option>
+            <option>Entregue</option>
+        </select>
+    </div>
+
+    <div id="listaOS" class="lista"></div>
+</section>
+
+</section>
+
+</main>
+
+<script src="../js/ordens.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BROTHERS OS • Financeiro</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/financeiro.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+       <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a class="active"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <span class="eyebrow">Financeiro</span>
+        <h2>Controle de faturamento</h2>
+        <p>Acompanhe valores recebidos, pendentes e ticket médio.</p>
+    </div>
+</header>
+
+<section class="cards">
+    <div class="card">
+        <span>Faturamento total</span>
+        <h3 id="totalFaturamento">R$ 0</h3>
+    </div>
+
+    <div class="card">
+        <span>Recebido</span>
+        <h3 id="totalRecebido">R$ 0</h3>
+    </div>
+    <div class="card">
+    <span>Custo com peças</span>
+    <h3 id="custoPecas">R$ 0</h3>
+</div>
+
+<div class="card dark">
+    <span>Lucro real</span>
+    <h3 id="lucroReal">R$ 0</h3>
+</div>
+
+    <div class="card">
+        <span>Pendente</span>
+        <h3 id="totalPendente">R$ 0</h3>
+    </div>
+<div class="card">
+    <span>Assistência técnica</span>
+    <h3 id="faturamentoAssistencia">R$ 0</h3>
+</div>
+
+<div class="card">
+    
+    <div class="card dark">
+        <span>Ticket médio</span>
+        <h3 id="ticketMedio">R$ 0</h3>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h3>Receitas das ordens</h3>
+
+        <div class="filters">
+            <input id="buscaFinanceiro" placeholder="Buscar cliente ou aparelho..." oninput="renderizarFinanceiro()">
+
+            <select id="filtroPagamento" onchange="renderizarFinanceiro()">
+                <option value="">Todos</option>
+                <option>Pago</option>
+                <option>Pendente</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="listaFinanceiro" class="lista"></div>
+</section>
+
+</main>
+
+<script src="../js/financeiro.js"></script>
+</body>
+</html>

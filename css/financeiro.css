@@ -1,0 +1,314 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    background:#f4f1ec;
+    color:#171717;
+}
+
+.sidebar{
+    width:290px;
+    min-height:100vh;
+    padding:28px;
+    background:rgba(255,255,255,0.75);
+    border-right:1px solid rgba(0,0,0,0.06);
+    position:sticky;
+    top:0;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:45px;
+}
+
+.brand-icon{
+    width:48px;
+    height:48px;
+    border-radius:16px;
+    background:#111;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:22px;
+}
+
+.brand h1{
+    font-size:19px;
+}
+
+.brand p{
+    font-size:13px;
+    color:#777;
+}
+
+nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+nav a{
+    height:48px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:0 16px;
+    border-radius:16px;
+    color:#666;
+    text-decoration:none;
+    transition:0.3s;
+    font-weight:500;
+}
+
+nav a:hover,
+nav a.active{
+    background:#111;
+    color:white;
+    transform:translateX(4px);
+}
+
+nav a i{
+    width:20px;
+}
+
+.main{
+    flex:1;
+    padding:36px;
+}
+
+.eyebrow{
+    color:#9a7b3f;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:13px;
+    font-weight:800;
+}
+
+.topbar h2{
+    font-size:38px;
+    letter-spacing:-1.5px;
+    margin:8px 0;
+}
+
+.topbar p{
+    color:#6b6b6b;
+}
+
+.cards{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+}
+
+.card{
+    padding:26px;
+    border-radius:28px;
+    background:rgba(255,255,255,0.82);
+    border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 25px 60px rgba(0,0,0,0.06);
+}
+
+.card span{
+    color:#777;
+    font-size:14px;
+    font-weight:700;
+}
+
+.card h3{
+    margin-top:12px;
+    font-size:30px;
+    letter-spacing:-1px;
+}
+
+.card.dark{
+    background:#111;
+    color:white;
+}
+
+.card.dark span{
+    color:#c7c7c7;
+}
+
+.panel{
+    margin-top:28px;
+    padding:28px;
+    border-radius:30px;
+    background:rgba(255,255,255,0.82);
+    border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 30px 70px rgba(0,0,0,0.07);
+}
+
+.panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    margin-bottom:22px;
+}
+
+.panel-head h3{
+    font-size:24px;
+}
+
+.filters{
+    display:flex;
+    gap:12px;
+}
+
+input,
+select{
+    height:50px;
+    border:none;
+    outline:none;
+    border-radius:16px;
+    background:#f2eee8;
+    padding:0 16px;
+    color:#111;
+}
+
+.lista{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.finance-item{
+    padding:18px;
+    border-radius:22px;
+    background:#f7f4ef;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    transition:0.3s;
+}
+
+.finance-item:hover{
+    background:white;
+    transform:scale(1.01);
+}
+
+.finance-item strong{
+    font-size:17px;
+}
+
+.finance-item p{
+    color:#777;
+    margin-top:5px;
+    font-size:14px;
+}
+
+.valor{
+    font-size:20px;
+    font-weight:800;
+}
+
+.badge{
+    display:inline-block;
+    margin-top:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.Pago{
+    background:#def7e8;
+    color:#087a3d;
+}
+
+.Pendente{
+    background:#fff3d8;
+    color:#9a6a00;
+}
+
+.actions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.actions button{
+    border:none;
+    border-radius:14px;
+    padding:11px 14px;
+    background:#111;
+    color:white;
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* DARK */
+
+body:not(.light){
+    background:#111;
+    color:white;
+}
+
+body:not(.light) .sidebar,
+body:not(.light) .panel,
+body:not(.light) .card{
+    background:rgba(28,28,28,0.9);
+    border-color:rgba(255,255,255,0.08);
+}
+
+body:not(.light) input,
+body:not(.light) select,
+body:not(.light) .finance-item{
+    background:#202020;
+    color:white;
+}
+
+body:not(.light) .finance-item:hover{
+    background:#292929;
+}
+
+body:not(.light) .brand-icon,
+body:not(.light) nav a:hover,
+body:not(.light) nav a.active,
+body:not(.light) .actions button,
+body:not(.light) .card.dark{
+    background:white;
+    color:#111;
+}
+
+body:not(.light) p,
+body:not(.light) .brand p,
+body:not(.light) .topbar p,
+body:not(.light) .card span,
+body:not(.light) .finance-item p{
+    color:#aaa;
+}
+
+@media(max-width:900px){
+    body{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        min-height:auto;
+    }
+
+    .panel-head,
+    .filters{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .finance-item{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}

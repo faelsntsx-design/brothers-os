@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BROTHERS OS • WhatsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/clientes.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a class="active"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+        <a onclick="sair()"><i data-lucide="log-out"></i> Sair</a>
+    </nav>
+</aside>
+
+<main class="main">
+    <header class="topbar">
+        <div>
+            <span class="eyebrow">WhatsApp</span>
+            <h2>Central de mensagens</h2>
+            <p>Envie atualizações rápidas para os clientes.</p>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h3>Clientes com OS</h3>
+            <input id="buscaWhats" placeholder="Buscar cliente ou aparelho..." oninput="renderizarWhatsApp()">
+        </div>
+
+        <div id="listaWhats" class="clientes-lista"></div>
+    </section>
+</main>
+
+<script src="../js/whatsapp.js"></script>
+</body>
+</html>

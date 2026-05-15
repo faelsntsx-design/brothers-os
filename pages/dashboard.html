@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BROTHERS OS • Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/dashboard.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a class="active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+        <a onclick="sair()"><i data-lucide="log-out"></i> Sair</a>
+    </nav>
+
+    <div class="sidebar-card">
+        <p>Status do sistema</p>
+        <strong>Online</strong>
+    </div>
+
+</aside>
+
+<main class="main">
+
+    <header class="topbar">
+        <div>
+            <span class="eyebrow">Painel administrativo</span>
+            <h2>Visão geral da assistência</h2>
+            <p>Controle suas ordens, clientes e financeiro em um só lugar.</p>
+        </div>
+
+        <button class="new-btn" onclick="window.location.href='ordens.html'">
+            <i data-lucide="plus"></i>
+            Nova OS
+        </button>
+    </header>
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Em reparo</span>
+            <h3 id="dashReparo">0</h3>
+            <p>Serviços em andamento</p>
+        </div>
+
+        <div class="stat-card">
+            <span>Prontos</span>
+            <h3 id="dashProntos">0</h3>
+            <p>Aguardando retirada</p>
+        </div>
+
+        <div class="stat-card">
+            <span>Ordens abertas</span>
+            <h3 id="dashOrdens">0</h3>
+            <p>Total cadastrado</p>
+        </div>
+
+        <div class="stat-card highlight">
+            <span>Faturamento</span>
+            <h3 id="dashFaturamento">R$ 0,00</h3>
+            <p>Soma das OS</p>
+        </div>
+
+    </section>
+
+    <section class="content-grid">
+
+        <div class="panel large">
+            <div class="panel-head">
+                <div>
+                    <h3>Atividade recente</h3>
+                    <p>Últimas movimentações da assistência</p>
+                </div>
+                <button onclick="window.location.href='ordens.html'">Ver tudo</button>
+            </div>
+
+            <div class="service-list" id="atividadeRecente"></div>
+        </div>
+
+        <div class="panel small">
+            <h3>Performance</h3>
+            <div class="progress-circle">
+                <span id="performancePorcentagem">0%</span>
+            </div>
+            <p class="center">Eficiência do laboratório</p>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BROTHERS OS • Login</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<button class="theme-btn" onclick="trocarTema()">Tema</button>
+
+<main class="login-page">
+
+    <section class="login-left">
+        <span class="eyebrow">Sistema premium</span>
+        <h1>Gerencie sua assistência com elegância.</h1>
+        <p>Ordens de serviço, clientes, aparelhos e financeiro em uma única interface profissional.</p>
+
+        <div class="lux-card">
+            <strong>BROTHERS OS</strong>
+            <span>Assistência técnica inteligente</span>
+        </div>
+    </section>
+
+    <section class="login-card">
+
+        <div class="brand">
+            <div class="brand-icon">B</div>
+            <div>
+                <h2>BROTHERS</h2>
+                <p>Service OS</p>
+            </div>
+        </div>
+
+        <h3>Acessar sistema</h3>
+        <p class="desc">Entre com seu login administrativo.</p>
+
+        <input type="text" id="login" placeholder="Login">
+        <input type="password" id="senha" placeholder="Senha">
+
+        <button class="login-btn" onclick="entrar()">Entrar</button>
+
+        <div class="loader" id="loader"></div>
+
+        <div id="mensagem"></div>
+
+    </section>
+
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

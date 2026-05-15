@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BROTHERS OS • Vendas</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/vendas.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a class="active"><i data-lucide="shopping-bag"></i> Vendas</a>
+        <a onclick="sair()"><i data-lucide="log-out"></i> Sair</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <span class="eyebrow">Vendas</span>
+        <h2>Registrar venda rápida</h2>
+        <p>Produtos e acessórios vendidos no balcão.</p>
+    </div>
+</header>
+<section class="cards-vendas">
+    <div class="card-venda">
+        <span>Total vendido</span>
+        <h3 id="totalVendido">R$ 0,00</h3>
+    </div>
+
+    <div class="card-venda">
+        <span>Pix</span>
+        <h3 id="totalPix">R$ 0,00</h3>
+    </div>
+
+    <div class="card-venda">
+        <span>Dinheiro</span>
+        <h3 id="totalDinheiro">R$ 0,00</h3>
+    </div>
+
+    <div class="card-venda">
+        <span>Cartão</span>
+        <h3 id="totalCartao">R$ 0,00</h3>
+    </div>
+
+    <div class="card-venda">
+        <span>Qtd. vendas</span>
+        <h3 id="qtdVendas">0</h3>
+    </div>
+</section>
+<section class="form-card">
+    <form id="formVenda">
+        <input id="produto" placeholder="Produto vendido (ex: Copo Stanley)" required>
+
+        <select id="categoria" required>
+            <option value="">Categoria</option>
+            <option>Acessório</option>
+            <option>Produto</option>
+            <option>Outro</option>
+        </select>
+
+        <input id="valor" placeholder="Valor R$" required>
+
+        <select id="pagamento" required>
+            <option value="">Pagamento</option>
+            <option>Pix</option>
+            <option>Dinheiro</option>
+            <option>Cartão</option>
+        </select>
+
+        <button type="submit">
+            <i data-lucide="plus"></i>
+            Registrar venda
+        </button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h3>Histórico de vendas</h3>
+    </div>
+
+    <div id="listaVendas"></div>
+</section>
+
+</main>
+
+<script src="../js/vendas.js"></script>
+</body>
+</html>

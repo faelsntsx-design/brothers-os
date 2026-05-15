@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BROTHERS OS • Clientes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/clientes.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a class="active"><i data-lucide="users"></i> Clientes</a>
+        <a href="celulares.html"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+       <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <span class="eyebrow">Clientes</span>
+        <h2>Base de clientes</h2>
+        <p>Todos os clientes são puxados automaticamente das ordens de serviço.</p>
+    </div>
+</header>
+
+<section class="summary">
+    <div>
+        <strong id="totalClientes">0</strong>
+        <span>Clientes</span>
+    </div>
+
+    <div>
+        <strong id="totalServicos">0</strong>
+        <span>Serviços</span>
+    </div>
+
+    <div>
+        <strong id="totalGasto">R$ 0</strong>
+        <span>Total movimentado</span>
+    </div>
+</section>
+
+<section class="panel">
+
+    <div class="panel-head">
+        <h3>Clientes cadastrados</h3>
+        <input id="buscaCliente" placeholder="Buscar cliente ou telefone..." oninput="renderizarClientes()">
+    </div>
+
+    <div id="listaClientes" class="clientes-lista"></div>
+
+</section>
+
+</main>
+
+<script src="../js/clientes.js"></script>
+</body>
+</html>

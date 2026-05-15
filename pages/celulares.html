@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BROTHERS OS • Celulares</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/celulares.css">
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
+            <h1>BROTHERS</h1>
+            <p>Service OS</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="aparelhos.html"><i data-lucide="smartphone"></i> Aparelhos</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="whatsapp.html"><i data-lucide="message-circle"></i> WhatsApp</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+        <a class="active"><i data-lucide="badge-dollar-sign"></i> Celulares</a>
+        <a onclick="sair()"><i data-lucide="log-out"></i> Sair</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <span class="eyebrow">Celulares</span>
+        <h2>Celulares da loja</h2>
+        <p>Cadastre aparelhos disponíveis e marque como vendido quando sair.</p>
+    </div>
+</header>
+
+<section class="cards">
+    <div class="card">
+        <span>Disponíveis</span>
+        <h3 id="totalDisponiveis">0</h3>
+    </div>
+
+    <div class="card">
+        <span>Vendidos</span>
+        <h3 id="totalVendidos">0</h3>
+    </div>
+
+    <div class="card">
+        <span>Valor em loja</span>
+        <h3 id="valorDisponivel">R$ 0,00</h3>
+    </div>
+
+    <div class="card dark">
+        <span>Faturamento vendido</span>
+        <h3 id="valorVendido">R$ 0,00</h3>
+    </div>
+</section>
+
+<section class="form-card">
+    <h3>Novo celular</h3>
+
+    <form id="formCelular">
+        <input id="marca" placeholder="Marca ex: Apple" required>
+        <input id="modelo" placeholder="Modelo ex: iPhone 11" required>
+        <input id="memoria" placeholder="Memória ex: 128GB">
+        <input id="cor" placeholder="Cor ex: Preto">
+        <input id="estado" placeholder="Estado ex: Seminovo / Vitrine">
+        <input id="valorCompra" placeholder="Valor de compra R$">
+        <input id="valorVenda" placeholder="Valor de venda R$" required>
+        <textarea id="observacao" placeholder="Observação do aparelho"></textarea>
+
+        <button type="submit">
+            <i data-lucide="plus"></i>
+            Cadastrar celular
+        </button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h3>Lista de celulares</h3>
+        <input id="buscaCelular" placeholder="Buscar marca, modelo, comprador..." oninput="renderizarCelulares()">
+    </div>
+
+    <div id="listaCelulares" class="lista"></div>
+</section>
+
+</main>
+
+<div class="modal" id="modalVenda">
+    <div class="modal-card">
+        <h3>Marcar como vendido</h3>
+
+        <input id="comprador" placeholder="Nome do comprador">
+        <input id="cpfComprador" placeholder="CPF do comprador">
+        <input id="telefoneComprador" placeholder="WhatsApp do comprador">
+
+        <button onclick="confirmarVenda()">Confirmar venda</button>
+        <button class="cancel" onclick="fecharModal()">Cancelar</button>
+    </div>
+</div>
+
+<script src="../js/celulares.js"></script>
+</body>
+</html>
