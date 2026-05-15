@@ -1,230 +1,170 @@
 const express = require("express");
 const cors = require("cors");
-const db = require("./database");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
+const dbPath = path.join(__dirname, "db.json");
+
+function lerDB(){
+    if(!fs.existsSync(dbPath)){
+        fs.writeFileSync(dbPath, JSON.stringify({
+            ordens: [],
+            vendas: [],
+            celulares: []
+        }, null, 2));
+    }
+
+    return JSON.parse(fs.readFileSync(dbPath, "utf8"));
+}
+
+function salvarDB(db){
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+}
+
+/* ORDENS */
+
 app.get("/ordens", (req, res) => {
-    db.all("SELECT * FROM ordens ORDER BY id DESC", [], (err, rows) => {
-        if(err) return res.status(500).json(err);
-        res.json(rows);
-    });
+    const db = lerDB();
+    res.json(db.ordens.sort((a,b) => b.id - a.id));
 });
 
 app.post("/ordens", (req, res) => {
-    const {
-        cliente, telefone, aparelho, modelo, defeito,
-        valor, valorPeca, maoObra, fornecedor, obsPeca,
-        status, pagamento, obs, data
-    } = req.body;
+    const db = lerDB();
 
-    db.run(
-        `INSERT INTO ordens 
-        (cliente, telefone, aparelho, modelo, defeito, valor, valorPeca, maoObra, fornecedor, obsPeca, status, pagamento, obs, data)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            cliente, telefone, aparelho, modelo, defeito,
-            valor, valorPeca, maoObra, fornecedor, obsPeca,
-            status, pagamento || "Pendente", obs, data
-        ],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ id:this.lastID, message:"Ordem criada" });
-        }
-    );
+    const nova = {
+        id: Date.now(),
+        ...req.body
+    };
+
+    db.ordens.unshift(nova);
+    salvarDB(db);
+
+    res.json(nova);
 });
 
 app.put("/ordens/:id", (req, res) => {
-    const {
-        cliente, telefone, aparelho, modelo, defeito,
-        valor, valorPeca, maoObra, fornecedor, obsPeca,
-        status, pagamento, obs
-    } = req.body;
+    const db = lerDB();
+    const id = Number(req.params.id);
 
-    db.run(
-        `UPDATE ordens SET
-        cliente = COALESCE(?, cliente),
-        telefone = COALESCE(?, telefone),
-        aparelho = COALESCE(?, aparelho),
-        modelo = COALESCE(?, modelo),
-        defeito = COALESCE(?, defeito),
-        valor = COALESCE(?, valor),
-        valorPeca = COALESCE(?, valorPeca),
-        maoObra = COALESCE(?, maoObra),
-        fornecedor = COALESCE(?, fornecedor),
-        obsPeca = COALESCE(?, obsPeca),
-        status = COALESCE(?, status),
-        pagamento = COALESCE(?, pagamento),
-        obs = COALESCE(?, obs)
-        WHERE id = ?`,
-        [
-            cliente, telefone, aparelho, modelo, defeito,
-            valor, valorPeca, maoObra, fornecedor, obsPeca,
-            status, pagamento, obs, req.params.id
-        ],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ message:"Ordem atualizada" });
+    db.ordens = db.ordens.map(os => {
+        if(os.id === id){
+            return { ...os, ...req.body };
         }
-    );
+
+        return os;
+    });
+
+    salvarDB(db);
+    res.json({ message:"Ordem atualizada" });
 });
 
 app.delete("/ordens/:id", (req, res) => {
-    db.run("DELETE FROM ordens WHERE id = ?", [req.params.id], function(err){
-        if(err) return res.status(500).json(err);
-        res.json({ message:"Ordem removida" });
-    });
+    const db = lerDB();
+    const id = Number(req.params.id);
+
+    db.ordens = db.ordens.filter(os => os.id !== id);
+
+    salvarDB(db);
+    res.json({ message:"Ordem removida" });
 });
-/* LISTAR VENDAS */
+
+/* VENDAS */
 
 app.get("/vendas", (req, res) => {
-    db.all("SELECT * FROM vendas ORDER BY id DESC", [], (err, rows) => {
-        if(err) return res.status(500).json(err);
-        res.json(rows);
-    });
+    const db = lerDB();
+    res.json(db.vendas.sort((a,b) => b.id - a.id));
 });
-
-/* CRIAR VENDA */
 
 app.post("/vendas", (req, res) => {
-    const { produto, categoria, valor, pagamento, data } = req.body;
+    const db = lerDB();
 
-    db.run(
-        `
-        INSERT INTO vendas
-        (produto, categoria, valor, pagamento, data)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [produto, categoria, valor, pagamento, data],
-        function(err){
-            if(err) return res.status(500).json(err);
+    const venda = {
+        id: Date.now(),
+        ...req.body
+    };
 
-            res.json({
-                id:this.lastID,
-                message:"Venda registrada"
-            });
-        }
-    );
+    db.vendas.unshift(venda);
+    salvarDB(db);
+
+    res.json(venda);
 });
-
-/* EXCLUIR VENDA */
 
 app.delete("/vendas/:id", (req, res) => {
-    db.run("DELETE FROM vendas WHERE id = ?", [req.params.id], function(err){
-        if(err) return res.status(500).json(err);
-        res.json({ message:"Venda removida" });
-    });
+    const db = lerDB();
+    const id = Number(req.params.id);
+
+    db.vendas = db.vendas.filter(venda => venda.id !== id);
+
+    salvarDB(db);
+    res.json({ message:"Venda removida" });
 });
+
+/* CELULARES */
+
 app.get("/celulares", (req, res) => {
-    db.all("SELECT * FROM celulares ORDER BY id DESC", [], (err, rows) => {
-        if(err) return res.status(500).json(err);
-        res.json(rows);
-    });
+    const db = lerDB();
+    res.json(db.celulares.sort((a,b) => b.id - a.id));
 });
 
 app.post("/celulares", (req, res) => {
-    const {
-        marca, modelo, memoria, cor, imei, estado,
-        valorCompra, valorVenda, observacao, dataCadastro
-    } = req.body;
+    const db = lerDB();
 
-    db.run(
-        `INSERT INTO celulares
-        (marca, modelo, memoria, cor, imei, estado, valorCompra, valorVenda, status, observacao, dataCadastro, garantia)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            marca, modelo, memoria, cor, imei, estado,
-            valorCompra, valorVenda, "Disponível", observacao,
-            dataCadastro, "3 meses"
-        ],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ id:this.lastID, message:"Celular cadastrado" });
-        }
-    );
+    const celular = {
+        id: Date.now(),
+        status: "Disponível",
+        garantia: "3 meses",
+        ...req.body
+    };
+
+    db.celulares.unshift(celular);
+    salvarDB(db);
+
+    res.json(celular);
 });
 
 app.put("/celulares/:id/vender", (req, res) => {
-    const { comprador, telefoneComprador, dataVenda } = req.body;
+    const db = lerDB();
+    const id = Number(req.params.id);
 
-    db.run(
-        `UPDATE celulares SET
-        status = 'Vendido',
-        comprador = ?,
-        telefoneComprador = ?,
-        dataVenda = ?
-        WHERE id = ?`,
-        [comprador, telefoneComprador, dataVenda, req.params.id],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ message:"Celular marcado como vendido" });
+    db.celulares = db.celulares.map(celular => {
+        if(celular.id === id){
+            return {
+                ...celular,
+                status: "Vendido",
+                comprador: req.body.comprador,
+                cpfComprador: req.body.cpfComprador,
+                telefoneComprador: req.body.telefoneComprador,
+                dataVenda: req.body.dataVenda
+            };
         }
-    );
+
+        return celular;
+    });
+
+    salvarDB(db);
+    res.json({ message:"Celular vendido" });
 });
 
 app.delete("/celulares/:id", (req, res) => {
-    db.run("DELETE FROM celulares WHERE id = ?", [req.params.id], function(err){
-        if(err) return res.status(500).json(err);
-        res.json({ message:"Celular removido" });
-    });
-});
-app.get("/celulares", (req, res) => {
-    db.all("SELECT * FROM celulares ORDER BY id DESC", [], (err, rows) => {
-        if(err) return res.status(500).json(err);
-        res.json(rows);
-    });
+    const db = lerDB();
+    const id = Number(req.params.id);
+
+    db.celulares = db.celulares.filter(celular => celular.id !== id);
+
+    salvarDB(db);
+    res.json({ message:"Celular removido" });
 });
 
-app.post("/celulares", (req, res) => {
-    const {
-        marca, modelo, memoria, cor, estado,
-        valorCompra, valorVenda, observacao, dataCadastro
-    } = req.body;
-
-    db.run(
-        `INSERT INTO celulares
-        (marca, modelo, memoria, cor, estado, valorCompra, valorVenda, status, observacao, dataCadastro, garantia)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            marca, modelo, memoria, cor, estado,
-            valorCompra, valorVenda, "Disponível",
-            observacao, dataCadastro, "3 meses"
-        ],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ id:this.lastID, message:"Celular cadastrado" });
-        }
-    );
+app.get("/", (req, res) => {
+    res.send("BROTHERS API ONLINE");
 });
 
-app.put("/celulares/:id/vender", (req, res) => {
-    const { comprador, cpfComprador, telefoneComprador, dataVenda } = req.body;
-
-    db.run(
-        `UPDATE celulares SET
-        status = 'Vendido',
-        comprador = ?,
-        cpfComprador = ?,
-        telefoneComprador = ?,
-        dataVenda = ?
-        WHERE id = ?`,
-        [comprador, cpfComprador, telefoneComprador, dataVenda, req.params.id],
-        function(err){
-            if(err) return res.status(500).json(err);
-            res.json({ message:"Celular vendido" });
-        }
-    );
-});
-
-app.delete("/celulares/:id", (req, res) => {
-    db.run("DELETE FROM celulares WHERE id = ?", [req.params.id], function(err){
-        if(err) return res.status(500).json(err);
-        res.json({ message:"Celular removido" });
-    });
-});
-app.listen(3000, () => {
-    console.log("BROTHERS API rodando em http://localhost:3000");
+app.listen(PORT, () => {
+    console.log(`BROTHERS API rodando na porta ${PORT}`);
 });
