@@ -4,8 +4,7 @@ if(localStorage.getItem("logado") !== "sim"){
 
 const API = "https://brothers-os.onrender.com";
 
-const tema = localStorage.getItem("tema");
-if(tema === "light"){
+if(localStorage.getItem("tema") === "light"){
     document.body.classList.add("light");
 }
 
@@ -17,6 +16,18 @@ const totalOS = document.getElementById("totalOS");
 
 let ordens = [];
 
+function get(obj, campo){
+    if(!obj) return "";
+
+    const mapa = {
+        valorPeca: "valorpeca",
+        maoObra: "maoobra",
+        obsPeca: "obspeca"
+    };
+
+    return obj[campo] ?? obj[mapa[campo]] ?? obj[String(campo).toLowerCase()] ?? "";
+}
+
 function numero(valor){
     return Number(
         String(valor || "0")
@@ -27,8 +38,8 @@ function numero(valor){
     ) || 0;
 }
 
-function moeda(valor){
-    return valor.toLocaleString("pt-BR", {
+function dinheiroTexto(valor){
+    return numero(valor).toLocaleString("pt-BR", {
         minimumFractionDigits:2,
         maximumFractionDigits:2
     });
@@ -37,25 +48,38 @@ function moeda(valor){
 function calcularTotal(){
     const valorPeca = numero(document.getElementById("valorPeca").value);
     const maoObra = numero(document.getElementById("maoObra").value);
-    document.getElementById("valor").value = moeda(valorPeca + maoObra);
+
+    document.getElementById("valor").value = dinheiroTexto(valorPeca + maoObra);
 }
 
 document.getElementById("valorPeca").addEventListener("input", calcularTotal);
 document.getElementById("maoObra").addEventListener("input", calcularTotal);
 
 async function carregarOrdens(){
+    lista.innerHTML = "<p>Carregando ordens...</p>";
+
     try{
-        const res = await fetch(`${API}/ordens`);
+        const res = await fetch(`${API}/ordens?nocache=${Date.now()}`);
+
+        if(!res.ok){
+            throw new Error("Erro ao carregar ordens");
+        }
+
         ordens = await res.json();
         renderizar();
+
     }catch(error){
-        lista.innerHTML = "<p>Erro: backend não está rodando.</p>";
-        console.log(error);
+        console.error(error);
+        lista.innerHTML = "<p>Erro ao carregar ordens.</p>";
     }
 }
 
 form.addEventListener("submit", async function(e){
     e.preventDefault();
+
+    const botao = document.getElementById("btnSalvar");
+    botao.disabled = true;
+    botao.innerText = "Salvando...";
 
     const editId = document.getElementById("editId").value;
 
@@ -76,29 +100,35 @@ form.addEventListener("submit", async function(e){
         data: new Date().toLocaleDateString("pt-BR")
     };
 
-    if(editId){
-        await fetch(`${API}/ordens/${editId}`, {
-            method:"PUT",
+    try{
+        const url = editId ? `${API}/ordens/${editId}` : `${API}/ordens`;
+        const metodo = editId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method: metodo,
             headers:{ "Content-Type":"application/json" },
-            body:JSON.stringify(ordem)
+            body: JSON.stringify(ordem)
         });
-    }else{
-        await fetch(`${API}/ordens`, {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body:JSON.stringify(ordem)
-        });
+
+        if(!res.ok){
+            const erro = await res.text();
+            throw new Error(erro);
+        }
+
+        cancelarEdicao();
+        await carregarOrdens();
+
+        alert(editId ? "Ordem atualizada com sucesso!" : "Ordem salva com sucesso!");
+
+    }catch(error){
+        console.error(error);
+        alert("Erro ao salvar ordem.");
+
+    }finally{
+        botao.disabled = false;
+        botao.innerHTML = `<i data-lucide="save"></i> Salvar ordem`;
+        lucide.createIcons();
     }
-
-    form.reset();
-    document.getElementById("editId").value = "";
-    document.getElementById("tituloForm").innerText = "Nova Ordem";
-    document.getElementById("btnSalvar").innerHTML = `<i data-lucide="save"></i> Salvar ordem`;
-    lucide.createIcons();
-
-    await carregarOrdens();
-
-    alert("Ordem salva com sucesso!");
 });
 
 function renderizar(){
@@ -108,8 +138,18 @@ function renderizar(){
     const filtroStatus = document.getElementById("filtroStatus")?.value || "";
 
     const filtradas = ordens.filter(os => {
-        const texto = `${os.cliente} ${os.telefone} ${os.aparelho} ${os.modelo} ${os.defeito} ${os.fornecedor}`.toLowerCase();
-        return texto.includes(busca) && (filtroStatus === "" || os.status === filtroStatus);
+        const texto = `
+            ${get(os,"cliente")}
+            ${get(os,"telefone")}
+            ${get(os,"aparelho")}
+            ${get(os,"modelo")}
+            ${get(os,"defeito")}
+            ${get(os,"fornecedor")}
+        `.toLowerCase();
+
+        const status = get(os,"status") || "Recebido";
+
+        return texto.includes(busca) && (filtroStatus === "" || status === filtroStatus);
     });
 
     atualizarContadores();
@@ -122,24 +162,32 @@ function renderizar(){
     }
 
     filtradas.forEach(os => {
-        const statusClasse = os.status ? os.status.split(" ")[0] : "Recebido";
+        const id = get(os,"id");
+        const status = get(os,"status") || "Recebido";
+        const statusClasse = status.split(" ")[0];
+
+        const valorPeca = dinheiroTexto(get(os,"valorPeca"));
+        const maoObra = dinheiroTexto(get(os,"maoObra"));
+        const total = dinheiroTexto(get(os,"valor"));
 
         lista.innerHTML += `
             <div class="os-item">
                 <div class="os-info">
-                    <strong>${os.aparelho || "Aparelho"} ${os.modelo || ""}</strong>
-                    <p>Cliente: ${os.cliente} • WhatsApp: ${os.telefone}</p>
-                    <p>Defeito: ${os.defeito || "Não informado"}</p>
-                    <p>Peça: R$ ${os.valorPeca || "0,00"} • Mão de obra: R$ ${os.maoObra || "0,00"}</p>
-                    <p>Total: R$ ${os.valor || "0,00"}</p>
-                    <p>Fornecedor: ${os.fornecedor || "Não informado"}</p>
-                    <p>Data: ${os.data || ""}</p>
+                    <strong>${get(os,"aparelho") || "Aparelho"} ${get(os,"modelo") || ""}</strong>
+
+                    <p>Cliente: ${get(os,"cliente")} • WhatsApp: ${get(os,"telefone")}</p>
+                    <p>Defeito: ${get(os,"defeito") || "Não informado"}</p>
+                    <p>Peça: R$ ${valorPeca} • Mão de obra: R$ ${maoObra}</p>
+                    <p>Total: R$ ${total}</p>
+                    <p>Fornecedor: ${get(os,"fornecedor") || "Não informado"}</p>
+                    <p>Obs peça: ${get(os,"obsPeca") || "Sem observação"}</p>
+                    <p>Data: ${get(os,"data") || ""}</p>
                 </div>
 
                 <div class="actions">
-                    <span class="badge ${statusClasse}">${os.status || "Recebido"}</span>
+                    <span class="badge ${statusClasse}">${status}</span>
 
-                    <select onchange="alterarStatus(${os.id}, this.value)">
+                    <select onchange="alterarStatus('${id}', this.value)">
                         <option>Alterar status</option>
                         <option>Recebido</option>
                         <option>Diagnóstico</option>
@@ -149,10 +197,10 @@ function renderizar(){
                         <option>Entregue</option>
                     </select>
 
-                    <button onclick="editarOS(${os.id})">Editar</button>
-                    <button onclick="enviarWhatsApp(${os.id})">WhatsApp</button>
-                    <button onclick="gerarPDF(${os.id})">PDF OS</button>
-                    <button class="delete-btn" onclick="excluirOS(${os.id})">Excluir</button>
+                    <button type="button" onclick="editarOS('${id}')">Editar</button>
+                    <button type="button" onclick="enviarWhatsApp('${id}')">WhatsApp</button>
+                    <button type="button" onclick="gerarPDF('${id}')">PDF OS</button>
+                    <button type="button" class="delete-btn" onclick="excluirOS('${id}')">Excluir</button>
                 </div>
             </div>
         `;
@@ -161,64 +209,104 @@ function renderizar(){
 
 function atualizarContadores(){
     document.getElementById("totalGeral").innerText = ordens.length;
-    document.getElementById("totalReparo").innerText = ordens.filter(os => os.status === "Em reparo").length;
-    document.getElementById("totalPronto").innerText = ordens.filter(os => os.status === "Pronto").length;
-    document.getElementById("totalEntregue").innerText = ordens.filter(os => os.status === "Entregue").length;
+    document.getElementById("totalReparo").innerText = ordens.filter(os => get(os,"status") === "Em reparo").length;
+    document.getElementById("totalPronto").innerText = ordens.filter(os => get(os,"status") === "Pronto").length;
+    document.getElementById("totalEntregue").innerText = ordens.filter(os => get(os,"status") === "Entregue").length;
+}
+
+function pegarOS(id){
+    return ordens.find(os => String(get(os,"id")) === String(id));
 }
 
 function editarOS(id){
-    const os = ordens.find(item => item.id === id);
+    const os = pegarOS(id);
 
-    document.getElementById("editId").value = os.id;
-    document.getElementById("cliente").value = os.cliente || "";
-    document.getElementById("telefone").value = os.telefone || "";
-    document.getElementById("aparelho").value = os.aparelho || "";
-    document.getElementById("modelo").value = os.modelo || "";
-    document.getElementById("defeito").value = os.defeito || "";
-    document.getElementById("valorPeca").value = os.valorPeca || "0";
-    document.getElementById("maoObra").value = os.maoObra || "0";
-    document.getElementById("fornecedor").value = os.fornecedor || "";
-    document.getElementById("valor").value = os.valor || "0";
-    document.getElementById("status").value = os.status || "Recebido";
-    document.getElementById("obs").value = os.obs || "";
-    document.getElementById("obsPeca").value = os.obsPeca || "";
+    if(!os){
+        alert("Ordem não encontrada.");
+        return;
+    }
+
+    document.getElementById("editId").value = get(os,"id");
+    document.getElementById("cliente").value = get(os,"cliente");
+    document.getElementById("telefone").value = get(os,"telefone");
+    document.getElementById("aparelho").value = get(os,"aparelho");
+    document.getElementById("modelo").value = get(os,"modelo");
+    document.getElementById("defeito").value = get(os,"defeito");
+    document.getElementById("valorPeca").value = dinheiroTexto(get(os,"valorPeca"));
+    document.getElementById("maoObra").value = dinheiroTexto(get(os,"maoObra"));
+    document.getElementById("fornecedor").value = get(os,"fornecedor");
+    document.getElementById("valor").value = dinheiroTexto(get(os,"valor"));
+    document.getElementById("status").value = get(os,"status") || "Recebido";
+    document.getElementById("obs").value = get(os,"obs");
+    document.getElementById("obsPeca").value = get(os,"obsPeca");
 
     document.getElementById("tituloForm").innerText = "Editando Ordem";
-    document.getElementById("btnSalvar").innerHTML = "Atualizar ordem";
+    document.getElementById("btnSalvar").innerText = "Atualizar ordem";
 
     window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+function cancelarEdicao(){
+    form.reset();
+
+    document.getElementById("editId").value = "";
+    document.getElementById("tituloForm").innerText = "Nova Ordem";
+    document.getElementById("btnSalvar").innerHTML = `<i data-lucide="save"></i> Salvar ordem`;
+
+    lucide.createIcons();
 }
 
 async function alterarStatus(id, novoStatus){
     if(novoStatus === "Alterar status") return;
 
-    await fetch(`${API}/ordens/${id}`, {
-        method:"PUT",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ status: novoStatus })
-    });
+    try{
+        const res = await fetch(`${API}/ordens/${id}`, {
+            method:"PUT",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({ status: novoStatus })
+        });
 
-    await carregarOrdens();
+        if(!res.ok){
+            const erro = await res.text();
+            throw new Error(erro);
+        }
+
+        await carregarOrdens();
+
+    }catch(error){
+        console.error(error);
+        alert("Erro ao alterar status.");
+    }
 }
 
 function enviarWhatsApp(id){
-    const os = ordens.find(item => item.id === id);
+    const os = pegarOS(id);
 
-    let telefone = String(os.telefone || "").replace(/\D/g, "");
+    if(!os){
+        alert("Ordem não encontrada.");
+        return;
+    }
+
+    let telefone = String(get(os,"telefone") || "").replace(/\D/g, "");
+
+    if(!telefone){
+        alert("Telefone do cliente não informado.");
+        return;
+    }
 
     if(!telefone.startsWith("55")){
         telefone = "55" + telefone;
     }
 
     const mensagem = encodeURIComponent(
-`Olá, ${os.cliente}! Aqui é da BROTHERS CELULARES.
+`Olá, ${get(os,"cliente")}! Aqui é da BROTHERS CELULARES.
 
 Sua ordem de serviço foi atualizada.
 
-Aparelho: ${os.aparelho} ${os.modelo}
-Defeito: ${os.defeito}
-Status atual: ${os.status}
-Total: R$ ${os.valor || "0,00"}
+Aparelho: ${get(os,"aparelho")} ${get(os,"modelo")}
+Defeito: ${get(os,"defeito")}
+Status atual: ${get(os,"status")}
+Total: R$ ${dinheiroTexto(get(os,"valor"))}
 
 Obrigado por confiar na BROTHERS CELULARES.`
     );
@@ -230,16 +318,41 @@ async function excluirOS(id){
     const confirmar = confirm("Excluir ordem?");
     if(!confirmar) return;
 
-    await fetch(`${API}/ordens/${id}`, { method:"DELETE" });
-    await carregarOrdens();
+    try{
+        const res = await fetch(`${API}/ordens/${id}`, {
+            method:"DELETE"
+        });
+
+        if(!res.ok){
+            const erro = await res.text();
+            throw new Error(erro);
+        }
+
+        await carregarOrdens();
+
+    }catch(error){
+        console.error(error);
+        alert("Erro ao excluir ordem.");
+    }
 }
 
 function gerarPDF(id){
-    const os = ordens.find(item => item.id === id);
+    const os = pegarOS(id);
+
+    if(!os){
+        alert("Ordem não encontrada.");
+        return;
+    }
+
+    if(!window.jspdf){
+        alert("Biblioteca PDF não carregou. Atualize a página com Ctrl + F5.");
+        return;
+    }
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    const total = os.valor || "0,00";
+    const total = dinheiroTexto(get(os,"valor"));
 
     doc.setFillColor(250, 248, 244);
     doc.rect(0, 0, 210, 297, "F");
@@ -257,8 +370,8 @@ function gerarPDF(id){
     doc.text("Assistência Técnica Especializada", 22, 38);
 
     doc.setFontSize(11);
-    doc.text(`OS #${os.id}`, 160, 27);
-    doc.text(`${os.data || ""}`, 160, 37);
+    doc.text(`OS #${get(os,"id")}`, 160, 27);
+    doc.text(`${get(os,"data") || ""}`, 160, 37);
 
     doc.setTextColor(25,25,25);
     doc.setFont("helvetica", "bold");
@@ -280,8 +393,8 @@ function gerarPDF(id){
 
     doc.setTextColor(25,25,25);
     doc.setFontSize(11);
-    doc.text(`Cliente: ${os.cliente || ""}`, 25, 116);
-    doc.text(`WhatsApp: ${os.telefone || ""}`, 25, 126);
+    doc.text(`Cliente: ${get(os,"cliente") || ""}`, 25, 116);
+    doc.text(`WhatsApp: ${get(os,"telefone") || ""}`, 25, 126);
 
     doc.setFillColor(255,255,255);
     doc.roundedRect(15, 142, 180, 62, 5, 5, "F");
@@ -294,10 +407,10 @@ function gerarPDF(id){
     doc.setTextColor(25,25,25);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.text(`Aparelho: ${os.aparelho || ""}`, 25, 168);
-    doc.text(`Modelo: ${os.modelo || ""}`, 25, 178);
-    doc.text(`Defeito relatado: ${os.defeito || ""}`, 25, 188);
-    doc.text(`Status: ${os.status || ""}`, 25, 198);
+    doc.text(`Aparelho: ${get(os,"aparelho") || ""}`, 25, 168);
+    doc.text(`Modelo: ${get(os,"modelo") || ""}`, 25, 178);
+    doc.text(`Defeito relatado: ${get(os,"defeito") || ""}`, 25, 188);
+    doc.text(`Status: ${get(os,"status") || ""}`, 25, 198);
 
     doc.setFillColor(18,18,18);
     doc.roundedRect(15, 216, 180, 28, 5, 5, "F");
@@ -307,7 +420,7 @@ function gerarPDF(id){
     doc.setFontSize(16);
     doc.text(`VALOR TOTAL: R$ ${total}`, 25, 234);
 
-    doc.save(`OS-${os.id}-${os.cliente}.pdf`);
+    doc.save(`OS-${get(os,"id")}-${get(os,"cliente")}.pdf`);
 }
 
 function sair(){
