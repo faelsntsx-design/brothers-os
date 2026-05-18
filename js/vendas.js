@@ -48,7 +48,7 @@ async function carregarVendas(){
         atualizarResumo();
 
     }catch(error){
-        lista.innerHTML = "<p>Erro ao carregar vendas. Aguarde alguns segundos e recarregue.</p>";
+        lista.innerHTML = "<p>Erro ao carregar vendas.</p>";
         console.error(error);
     }
 }
@@ -88,7 +88,7 @@ form.addEventListener("submit", async function(e){
         alert("Venda registrada com sucesso!");
 
     }catch(error){
-        alert("Erro ao salvar venda. Tente novamente.");
+        alert("Erro ao salvar venda.");
         console.error(error);
 
     }finally{
@@ -150,9 +150,13 @@ async function excluirVenda(id){
     if(!confirmar) return;
 
     try{
-        await fetch(`${API}/vendas/${id}`, {
+        const res = await fetch(`${API}/vendas/${id}`, {
             method:"DELETE"
         });
+
+        if(!res.ok){
+            throw new Error("Erro ao excluir");
+        }
 
         await carregarVendas();
 
