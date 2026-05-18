@@ -4,38 +4,14 @@ if(localStorage.getItem("logado") !== "sim"){
 
 const API = "https://brothers-os.onrender.com";
 
-const tema = localStorage.getItem("tema");
-
-if(tema === "light"){
+if(localStorage.getItem("tema") === "light"){
     document.body.classList.add("light");
 }
 
 lucide.createIcons();
 
-let ordens = [];
-
-async function carregarDashboard(){
-    try{
-        const res = await fetch(`${API}/ordens`);
-
-        if(!res.ok){
-            throw new Error("Erro ao buscar ordens");
-        }
-
-        ordens = await res.json();
-        atualizarDashboard();
-
-    }catch(error){
-        console.log("Erro no dashboard:", error);
-
-        const atividade = document.getElementById("atividadeRecente");
-
-        if(atividade){
-            atividade.innerHTML = `
-                <p>Não foi possível conectar ao servidor. Verifique se o backend está rodando.</p>
-            `;
-        }
-    }
+function campo(obj, nome){
+    return obj[nome] || obj[nome.toLowerCase()] || "";
 }
 
 function numero(valor){
@@ -55,88 +31,76 @@ function moeda(valor){
     });
 }
 
-function atualizarDashboard(){
-    const emReparo = ordens.filter(os => os.status === "Em reparo").length;
-    const prontos = ordens.filter(os => os.status === "Pronto").length;
-    const total = ordens.length;
+async function carregarDashboard(){
+    try{
+        const [ordensRes, vendasRes, celularesRes] = await Promise.all([
+            fetch(`${API}/ordens`),
+            fetch(`${API}/vendas`),
+            fetch(`${API}/celulares`)
+        ]);
 
-    const faturamento = ordens.reduce((soma, os) => {
-        const totalOS = numero(os.valor) || numero(os.valorPeca) + numero(os.maoObra);
-        return soma + totalOS;
-    }, 0);
+        const ordens = await ordensRes.json();
+        const vendas = await vendasRes.json();
+        const celulares = await celularesRes.json();
 
-    document.getElementById("dashReparo").innerText = emReparo;
-    document.getElementById("dashProntos").innerText = prontos;
-    document.getElementById("dashOrdens").innerText = total;
-    document.getElementById("dashFaturamento").innerText = moeda(faturamento);
+        document.getElementById("totalOrdens").innerText = ordens.length;
+        document.getElementById("ordensProntas").innerText =
+            ordens.filter(os => campo(os,"status") === "Pronto").length;
 
-    atualizarPerformance();
-    renderizarAtividadeRecente();
-}
+        document.getElementById("ordensReparo").innerText =
+            ordens.filter(os => campo(os,"status") === "Em reparo").length;
 
-function atualizarPerformance(){
-    const total = ordens.length;
-    const finalizadas = ordens.filter(os =>
-        os.status === "Pronto" || os.status === "Entregue"
-    ).length;
+        const faturamentoOS = ordens
+            .filter(os => campo(os,"status") === "Entregue")
+            .reduce((soma, os) => soma + numero(campo(os,"valor")), 0);
 
-    const porcentagem = total > 0 ? Math.round((finalizadas / total) * 100) : 0;
+        const faturamentoVendas = vendas
+            .reduce((soma, venda) => soma + numero(campo(venda,"valor")), 0);
 
-    const texto = document.getElementById("performancePorcentagem");
-    const circulo = document.querySelector(".progress-circle");
+        const faturamentoCelulares = celulares
+            .filter(c => campo(c,"status") === "Vendido")
+            .reduce((soma, c) => soma + numero(campo(c,"valorVenda")), 0);
 
-    if(texto){
-        texto.innerText = `${porcentagem}%`;
-    }
+        const total = faturamentoOS + faturamentoVendas + faturamentoCelulares;
 
-    if(circulo){
-        circulo.style.setProperty("--progress", `${porcentagem}%`);
-    }
-}
+        document.getElementById("faturamentoTotal").innerText = moeda(total);
 
-function renderizarAtividadeRecente(){
-    const container = document.getElementById("atividadeRecente");
+        const atividades = document.getElementById("atividadesRecentes");
+        atividades.innerHTML = "";
 
-    if(!container) return;
+        const recentes = [
+            ...ordens.map(o => ({
+                tipo:"OS",
+                titulo:`${campo(o,"cliente")} - ${campo(o,"aparelho")}`,
+                data:campo(o,"data")
+            })),
+            ...vendas.map(v => ({
+                tipo:"Venda",
+                titulo:`${campo(v,"produto")} - ${moeda(numero(campo(v,"valor")))}`,
+                data:campo(v,"data")
+            })),
+            ...celulares
+                .filter(c => campo(c,"status") === "Vendido")
+                .map(c => ({
+                    tipo:"Celular",
+                    titulo:`${campo(c,"marca")} ${campo(c,"modelo")} vendido`,
+                    data:campo(c,"dataVenda")
+                }))
+        ];
 
-    container.innerHTML = "";
-
-    const recentes = ordens.slice(0, 6);
-
-    if(recentes.length === 0){
-        container.innerHTML = `<p>Nenhuma atividade recente.</p>`;
-        return;
-    }
-
-    recentes.forEach(os => {
-        container.innerHTML += `
-            <div class="service-item">
-                <div>
-                    <strong>${os.aparelho || "Aparelho"} ${os.modelo || ""}</strong>
-                    <p>
-                        ${os.cliente || "Cliente"} • 
-                        ${os.defeito || "Sem defeito informado"} • 
-                        ${os.data || ""}
-                    </p>
+        recentes.slice(0, 10).forEach(item => {
+            atividades.innerHTML += `
+                <div class="activity-item">
+                    <strong>${item.tipo}</strong>
+                    <p>${item.titulo}</p>
+                    <small>${item.data}</small>
                 </div>
+            `;
+        });
 
-                <span class="tag ${classeStatus(os.status)}">
-                    ${os.status || "Recebido"}
-                </span>
-            </div>
-        `;
-    });
-}
-
-function classeStatus(status){
-    if(status === "Em reparo") return "repair";
-    if(status === "Pronto") return "ready";
-    if(status === "Diagnóstico") return "diagnostic";
-    if(status === "Entregue") return "delivered";
-    if(status === "Recebido") return "received";
-    if(status === "Aguardando aprovação") return "repair";
-
-    return "received";
+    }catch(error){
+        console.error(error);
+    }
 }
 
 function sair(){
@@ -145,5 +109,3 @@ function sair(){
 }
 
 carregarDashboard();
-
-setInterval(carregarDashboard, 3000);
