@@ -40,15 +40,30 @@ function moeda(valor){
 async function carregarCelulares(){
     lista.innerHTML = "<p>Carregando celulares...</p>";
 
-    const res = await fetch(`${API}/celulares`);
-    celulares = await res.json();
+    try{
+        const res = await fetch(`${API}/celulares`);
 
-    renderizarCelulares();
-    atualizarResumo();
+        if(!res.ok){
+            throw new Error("Erro ao carregar celulares");
+        }
+
+        celulares = await res.json();
+
+        renderizarCelulares();
+        atualizarResumo();
+
+    }catch(error){
+        lista.innerHTML = "<p>Erro ao carregar celulares. Aguarde e tente novamente.</p>";
+        console.error(error);
+    }
 }
 
 form.addEventListener("submit", async function(e){
     e.preventDefault();
+
+    const botao = form.querySelector("button");
+    botao.disabled = true;
+    botao.innerText = "Salvando...";
 
     const celular = {
         marca: document.getElementById("marca").value,
@@ -62,24 +77,44 @@ form.addEventListener("submit", async function(e){
         dataCadastro: new Date().toLocaleDateString("pt-BR")
     };
 
-    await fetch(`${API}/celulares`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify(celular)
-    });
+    try{
+        const res = await fetch(`${API}/celulares`, {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify(celular)
+        });
 
-    form.reset();
-    await carregarCelulares();
+        if(!res.ok){
+            throw new Error("Erro ao cadastrar celular");
+        }
 
-    alert("Celular cadastrado com sucesso!");
+        form.reset();
+        await carregarCelulares();
+
+        alert("Celular cadastrado com sucesso!");
+
+    }catch(error){
+        alert("Erro ao cadastrar celular. Tente novamente.");
+        console.error(error);
+
+    }finally{
+        botao.disabled = false;
+        botao.innerHTML = `<i data-lucide="plus"></i> Cadastrar celular`;
+        lucide.createIcons();
+    }
 });
 
 function atualizarResumo(){
     const disponiveis = celulares.filter(c => campo(c,"status") === "Disponível");
     const vendidos = celulares.filter(c => campo(c,"status") === "Vendido");
 
-    const valorDisponivel = disponiveis.reduce((soma,c) => soma + numero(campo(c,"valorVenda")), 0);
-    const valorVendido = vendidos.reduce((soma,c) => soma + numero(campo(c,"valorVenda")), 0);
+    const valorDisponivel = disponiveis.reduce((soma,c) => {
+        return soma + numero(campo(c,"valorVenda"));
+    }, 0);
+
+    const valorVendido = vendidos.reduce((soma,c) => {
+        return soma + numero(campo(c,"valorVenda"));
+    }, 0);
 
     document.getElementById("totalDisponiveis").innerText = disponiveis.length;
     document.getElementById("totalVendidos").innerText = vendidos.length;
@@ -98,6 +133,7 @@ function renderizarCelulares(){
             ${campo(c,"cor")}
             ${campo(c,"estado")}
             ${campo(c,"comprador")}
+            ${campo(c,"cpfComprador")}
         `.toLowerCase();
 
         return texto.includes(busca);
@@ -160,6 +196,10 @@ function fecharModal(){
 }
 
 async function confirmarVenda(){
+    const botao = document.querySelector("#modalVenda button");
+    botao.disabled = true;
+    botao.innerText = "Salvando...";
+
     const venda = {
         comprador: document.getElementById("comprador").value,
         cpfComprador: document.getElementById("cpfComprador").value,
@@ -167,24 +207,43 @@ async function confirmarVenda(){
         dataVenda: new Date().toLocaleDateString("pt-BR")
     };
 
-    await fetch(`${API}/celulares/${celularSelecionado}/vender`, {
-        method:"PUT",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify(venda)
-    });
+    try{
+        const res = await fetch(`${API}/celulares/${celularSelecionado}/vender`, {
+            method:"PUT",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify(venda)
+        });
 
-    document.getElementById("comprador").value = "";
-    document.getElementById("cpfComprador").value = "";
-    document.getElementById("telefoneComprador").value = "";
+        if(!res.ok){
+            throw new Error("Erro ao vender celular");
+        }
 
-    fecharModal();
-    await carregarCelulares();
+        document.getElementById("comprador").value = "";
+        document.getElementById("cpfComprador").value = "";
+        document.getElementById("telefoneComprador").value = "";
 
-    alert("Celular marcado como vendido!");
+        fecharModal();
+        await carregarCelulares();
+
+        alert("Celular marcado como vendido!");
+
+    }catch(error){
+        alert("Erro ao marcar como vendido.");
+        console.error(error);
+
+    }finally{
+        botao.disabled = false;
+        botao.innerText = "Confirmar venda";
+    }
 }
 
 function gerarComprovante(id){
     const c = celulares.find(item => Number(campo(item,"id")) === Number(id));
+
+    if(!c){
+        alert("Celular não encontrado.");
+        return;
+    }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -303,7 +362,17 @@ Para acionar a garantia, o comprador deverá apresentar este comprovante e os da
 function enviarWhatsApp(id){
     const c = celulares.find(item => Number(campo(item,"id")) === Number(id));
 
+    if(!c){
+        alert("Celular não encontrado.");
+        return;
+    }
+
     let telefone = String(campo(c,"telefoneComprador") || "").replace(/\D/g,"");
+
+    if(!telefone){
+        alert("WhatsApp do comprador não informado.");
+        return;
+    }
 
     if(!telefone.startsWith("55")){
         telefone = "55" + telefone;
@@ -330,8 +399,21 @@ async function excluirCelular(id){
     const confirmar = confirm("Excluir celular?");
     if(!confirmar) return;
 
-    await fetch(`${API}/celulares/${id}`, { method:"DELETE" });
-    await carregarCelulares();
+    try{
+        const res = await fetch(`${API}/celulares/${id}`, {
+            method:"DELETE"
+        });
+
+        if(!res.ok){
+            throw new Error("Erro ao excluir celular");
+        }
+
+        await carregarCelulares();
+
+    }catch(error){
+        alert("Erro ao excluir celular.");
+        console.error(error);
+    }
 }
 
 function sair(){
