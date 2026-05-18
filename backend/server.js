@@ -182,56 +182,84 @@ app.post("/celulares", async (req, res) => {
 
         await pool.query(
             `INSERT INTO celulares 
-            (id, marca, modelo, memoria, cor, estado, valorCompra, valorVenda, status, observacao, comprador, cpfComprador, telefoneComprador, dataCadastro, dataVenda, garantia)
+            (
+                id,
+                marca,
+                modelo,
+                memoria,
+                cor,
+                estado,
+                valorcompra,
+                valorvenda,
+                status,
+                observacao,
+                comprador,
+                cpfcomprador,
+                telefonecomprador,
+                datacadastro,
+                datavenda,
+                garantia
+            )
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
             [
                 id,
-                c.marca,
-                c.modelo,
-                c.memoria,
-                c.cor,
-                c.estado,
-                c.valorCompra,
-                c.valorVenda,
+                c.marca || "",
+                c.modelo || "",
+                c.memoria || "",
+                c.cor || "",
+                c.estado || "",
+                c.valorCompra || "0",
+                c.valorVenda || "0",
                 "Disponível",
-                c.observacao,
+                c.observacao || "",
                 "",
                 "",
                 "",
-                c.dataCadastro,
+                c.dataCadastro || "",
                 "",
                 "3 meses"
             ]
         );
 
-        res.json({ id, message:"Celular cadastrado" });
+        res.json({
+            success:true,
+            id
+        });
+
     }catch(error){
-        res.status(500).json({ error:error.message });
+        console.error(error);
+        res.status(500).json({
+            error:error.message
+        });
     }
 });
-
 app.put("/celulares/:id/vender", async (req, res) => {
     try{
         await pool.query(
             `UPDATE celulares SET
-            status='Vendido',
-            comprador=$1,
-            cpfComprador=$2,
-            telefoneComprador=$3,
-            dataVenda=$4
-            WHERE id=$5`,
+                status=$1,
+                comprador=$2,
+                cpfcomprador=$3,
+                telefonecomprador=$4,
+                datavenda=$5
+            WHERE id=$6`,
             [
-                req.body.comprador,
-                req.body.cpfComprador,
-                req.body.telefoneComprador,
-                req.body.dataVenda,
+                "Vendido",
+                req.body.comprador || "",
+                req.body.cpfComprador || "",
+                req.body.telefoneComprador || "",
+                req.body.dataVenda || "",
                 req.params.id
             ]
         );
 
-        res.json({ message:"Celular vendido" });
+        res.json({ success:true });
+
     }catch(error){
-        res.status(500).json({ error:error.message });
+        console.error(error);
+        res.status(500).json({
+            error:error.message
+        });
     }
 });
 
