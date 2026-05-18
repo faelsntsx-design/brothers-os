@@ -33,14 +33,32 @@ function moeda(valor){
 }
 
 async function carregarVendas(){
-    const res = await fetch(`${API}/vendas`);
-    vendas = await res.json();
-    renderizar();
-    atualizarResumo();
+    lista.innerHTML = "<p>Carregando vendas...</p>";
+
+    try{
+        const res = await fetch(`${API}/vendas`);
+
+        if(!res.ok){
+            throw new Error("Erro ao carregar vendas");
+        }
+
+        vendas = await res.json();
+
+        renderizar();
+        atualizarResumo();
+
+    }catch(error){
+        lista.innerHTML = "<p>Erro ao carregar vendas. Aguarde alguns segundos e recarregue.</p>";
+        console.error(error);
+    }
 }
 
 form.addEventListener("submit", async function(e){
     e.preventDefault();
+
+    const botao = form.querySelector("button");
+    botao.disabled = true;
+    botao.innerText = "Salvando...";
 
     const venda = {
         produto: document.getElementById("produto").value,
@@ -50,16 +68,34 @@ form.addEventListener("submit", async function(e){
         data: new Date().toLocaleDateString("pt-BR")
     };
 
-    await fetch(`${API}/vendas`, {
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify(venda)
-    });
+    try{
+        const res = await fetch(`${API}/vendas`, {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(venda)
+        });
 
-    form.reset();
-    carregarVendas();
+        if(!res.ok){
+            throw new Error("Erro ao salvar venda");
+        }
+
+        form.reset();
+
+        await carregarVendas();
+
+        alert("Venda registrada com sucesso!");
+
+    }catch(error){
+        alert("Erro ao salvar venda. Tente novamente.");
+        console.error(error);
+
+    }finally{
+        botao.disabled = false;
+        botao.innerHTML = `<i data-lucide="plus"></i> Registrar venda`;
+        lucide.createIcons();
+    }
 });
 
 function atualizarResumo(){
@@ -113,11 +149,17 @@ async function excluirVenda(id){
     const confirmar = confirm("Excluir venda?");
     if(!confirmar) return;
 
-    await fetch(`${API}/vendas/${id}`, {
-        method:"DELETE"
-    });
+    try{
+        await fetch(`${API}/vendas/${id}`, {
+            method:"DELETE"
+        });
 
-    carregarVendas();
+        await carregarVendas();
+
+    }catch(error){
+        alert("Erro ao excluir venda.");
+        console.error(error);
+    }
 }
 
 function sair(){
