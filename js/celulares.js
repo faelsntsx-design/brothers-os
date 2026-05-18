@@ -16,6 +16,10 @@ let celularSelecionado = null;
 const form = document.getElementById("formCelular");
 const lista = document.getElementById("listaCelulares");
 
+function campo(obj, nome){
+    return obj[nome] || obj[nome.toLowerCase()] || "";
+}
+
 function numero(valor){
     return Number(
         String(valor || "0")
@@ -34,8 +38,11 @@ function moeda(valor){
 }
 
 async function carregarCelulares(){
+    lista.innerHTML = "<p>Carregando celulares...</p>";
+
     const res = await fetch(`${API}/celulares`);
     celulares = await res.json();
+
     renderizarCelulares();
     atualizarResumo();
 }
@@ -62,15 +69,17 @@ form.addEventListener("submit", async function(e){
     });
 
     form.reset();
-    carregarCelulares();
+    await carregarCelulares();
+
+    alert("Celular cadastrado com sucesso!");
 });
 
 function atualizarResumo(){
-    const disponiveis = celulares.filter(c => c.status === "Disponível");
-    const vendidos = celulares.filter(c => c.status === "Vendido");
+    const disponiveis = celulares.filter(c => campo(c,"status") === "Disponível");
+    const vendidos = celulares.filter(c => campo(c,"status") === "Vendido");
 
-    const valorDisponivel = disponiveis.reduce((soma,c) => soma + numero(c.valorVenda), 0);
-    const valorVendido = vendidos.reduce((soma,c) => soma + numero(c.valorVenda), 0);
+    const valorDisponivel = disponiveis.reduce((soma,c) => soma + numero(campo(c,"valorVenda")), 0);
+    const valorVendido = vendidos.reduce((soma,c) => soma + numero(campo(c,"valorVenda")), 0);
 
     document.getElementById("totalDisponiveis").innerText = disponiveis.length;
     document.getElementById("totalVendidos").innerText = vendidos.length;
@@ -82,7 +91,15 @@ function renderizarCelulares(){
     const busca = document.getElementById("buscaCelular").value.toLowerCase();
 
     const filtrados = celulares.filter(c => {
-        const texto = `${c.marca} ${c.modelo} ${c.memoria} ${c.cor} ${c.estado} ${c.comprador || ""}`.toLowerCase();
+        const texto = `
+            ${campo(c,"marca")}
+            ${campo(c,"modelo")}
+            ${campo(c,"memoria")}
+            ${campo(c,"cor")}
+            ${campo(c,"estado")}
+            ${campo(c,"comprador")}
+        `.toLowerCase();
+
         return texto.includes(busca);
     });
 
@@ -94,29 +111,38 @@ function renderizarCelulares(){
     }
 
     filtrados.forEach(c => {
+        const id = campo(c,"id");
+        const status = campo(c,"status") || "Disponível";
+
         lista.innerHTML += `
             <div class="celular-item">
                 <div>
-                    <strong>${c.marca || ""} ${c.modelo || ""} • ${c.memoria || ""}</strong>
-                    <p>Cor: ${c.cor || "Não informado"} • Estado: ${c.estado || "Não informado"}</p>
-                    <p>Compra: ${moeda(numero(c.valorCompra))} • Venda: ${moeda(numero(c.valorVenda))}</p>
-                    <p>Obs: ${c.observacao || "Sem observação"}</p>
-                    ${c.status === "Vendido" ? `
-                        <p>Comprador: ${c.comprador || ""}</p>
-                        <p>CPF: ${c.cpfComprador || ""} • WhatsApp: ${c.telefoneComprador || ""}</p>
-                        <p>Data venda: ${c.dataVenda || ""} • Garantia: ${c.garantia || "3 meses"}</p>
+                    <strong>${campo(c,"marca")} ${campo(c,"modelo")} • ${campo(c,"memoria")}</strong>
+
+                    <p>Cor: ${campo(c,"cor") || "Não informado"} • Estado: ${campo(c,"estado") || "Não informado"}</p>
+
+                    <p>Compra: ${moeda(numero(campo(c,"valorCompra")))} • Venda: ${moeda(numero(campo(c,"valorVenda")))}</p>
+
+                    <p>Obs: ${campo(c,"observacao") || "Sem observação"}</p>
+
+                    ${status === "Vendido" ? `
+                        <p>Comprador: ${campo(c,"comprador") || ""}</p>
+                        <p>CPF: ${campo(c,"cpfComprador") || ""} • WhatsApp: ${campo(c,"telefoneComprador") || ""}</p>
+                        <p>Data venda: ${campo(c,"dataVenda") || ""} • Garantia: ${campo(c,"garantia") || "3 meses"}</p>
                     ` : ""}
-                    <span class="badge ${c.status}">${c.status}</span>
+
+                    <span class="badge ${status}">${status}</span>
                 </div>
 
                 <div class="actions">
-                    ${c.status === "Disponível" ? `
-                        <button onclick="abrirModalVenda(${c.id})">Marcar vendido</button>
+                    ${status === "Disponível" ? `
+                        <button onclick="abrirModalVenda(${id})">Marcar vendido</button>
                     ` : `
-                        <button onclick="gerarComprovante(${c.id})">PDF venda</button>
-                        <button onclick="enviarWhatsApp(${c.id})">WhatsApp</button>
+                        <button onclick="gerarComprovante(${id})">PDF venda</button>
+                        <button onclick="enviarWhatsApp(${id})">WhatsApp</button>
                     `}
-                    <button class="delete-btn" onclick="excluirCelular(${c.id})">Excluir</button>
+
+                    <button class="delete-btn" onclick="excluirCelular(${id})">Excluir</button>
                 </div>
             </div>
         `;
@@ -152,11 +178,14 @@ async function confirmarVenda(){
     document.getElementById("telefoneComprador").value = "";
 
     fecharModal();
-    carregarCelulares();
+    await carregarCelulares();
+
+    alert("Celular marcado como vendido!");
 }
 
 function gerarComprovante(id){
-    const c = celulares.find(item => item.id === id);
+    const c = celulares.find(item => Number(campo(item,"id")) === Number(id));
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
@@ -195,9 +224,9 @@ function gerarComprovante(id){
 
     doc.setTextColor(25,25,25);
     doc.setFontSize(11);
-    doc.text(`Nome: ${c.comprador || ""}`,25,118);
-    doc.text(`CPF: ${c.cpfComprador || ""}`,25,128);
-    doc.text(`WhatsApp: ${c.telefoneComprador || ""}`,25,138);
+    doc.text(`Nome: ${campo(c,"comprador") || ""}`,25,118);
+    doc.text(`CPF: ${campo(c,"cpfComprador") || ""}`,25,128);
+    doc.text(`WhatsApp: ${campo(c,"telefoneComprador") || ""}`,25,138);
 
     doc.setFillColor(255,255,255);
     doc.roundedRect(15,154,180,64,5,5,"F");
@@ -210,10 +239,10 @@ function gerarComprovante(id){
     doc.setTextColor(25,25,25);
     doc.setFont("helvetica","normal");
     doc.setFontSize(11);
-    doc.text(`Aparelho: ${c.marca || ""} ${c.modelo || ""}`,25,180);
-    doc.text(`Memória: ${c.memoria || ""}`,25,190);
-    doc.text(`Cor: ${c.cor || ""}`,25,200);
-    doc.text(`Estado: ${c.estado || ""}`,25,210);
+    doc.text(`Aparelho: ${campo(c,"marca")} ${campo(c,"modelo")}`,25,180);
+    doc.text(`Memória: ${campo(c,"memoria")}`,25,190);
+    doc.text(`Cor: ${campo(c,"cor")}`,25,200);
+    doc.text(`Estado: ${campo(c,"estado")}`,25,210);
 
     doc.setFillColor(18,18,18);
     doc.roundedRect(15,232,180,28,5,5,"F");
@@ -221,7 +250,7 @@ function gerarComprovante(id){
     doc.setTextColor(255,255,255);
     doc.setFont("helvetica","bold");
     doc.setFontSize(15);
-    doc.text(`VALOR: ${moeda(numero(c.valorVenda))}`,25,250);
+    doc.text(`VALOR: ${moeda(numero(campo(c,"valorVenda")))}`,25,250);
 
     doc.addPage();
 
@@ -256,9 +285,9 @@ Para acionar a garantia, o comprador deverá apresentar este comprovante e os da
     doc.text(doc.splitTextToSize(termo,158),26,82);
 
     doc.setFont("helvetica","bold");
-    doc.text(`Comprador: ${c.comprador || ""}`,25,215);
-    doc.text(`CPF: ${c.cpfComprador || ""}`,25,227);
-    doc.text(`Data da venda: ${c.dataVenda || ""}`,25,239);
+    doc.text(`Comprador: ${campo(c,"comprador") || ""}`,25,215);
+    doc.text(`CPF: ${campo(c,"cpfComprador") || ""}`,25,227);
+    doc.text(`Data da venda: ${campo(c,"dataVenda") || ""}`,25,239);
 
     doc.line(25,270,90,270);
     doc.line(120,270,185,270);
@@ -268,27 +297,27 @@ Para acionar a garantia, o comprador deverá apresentar este comprovante e os da
     doc.text("Assinatura do cliente",36,277);
     doc.text("BROTHERS CELULARES",134,277);
 
-    doc.save(`Venda-${c.modelo}-${c.comprador}.pdf`);
+    doc.save(`Venda-${campo(c,"modelo")}-${campo(c,"comprador")}.pdf`);
 }
 
 function enviarWhatsApp(id){
-    const c = celulares.find(item => item.id === id);
+    const c = celulares.find(item => Number(campo(item,"id")) === Number(id));
 
-    let telefone = String(c.telefoneComprador || "").replace(/\D/g,"");
+    let telefone = String(campo(c,"telefoneComprador") || "").replace(/\D/g,"");
 
     if(!telefone.startsWith("55")){
         telefone = "55" + telefone;
     }
 
     const mensagem = encodeURIComponent(
-`Olá, ${c.comprador}! Aqui é da BROTHERS CELULARES.
+`Olá, ${campo(c,"comprador")}! Aqui é da BROTHERS CELULARES.
 
-Segue o resumo da sua compra:
+Resumo da sua compra:
 
-Aparelho: ${c.marca} ${c.modelo}
-Memória: ${c.memoria}
-Cor: ${c.cor}
-Valor: ${moeda(numero(c.valorVenda))}
+Aparelho: ${campo(c,"marca")} ${campo(c,"modelo")}
+Memória: ${campo(c,"memoria")}
+Cor: ${campo(c,"cor")}
+Valor: ${moeda(numero(campo(c,"valorVenda")))}
 Garantia: 3 meses
 
 Obrigado pela preferência!`
@@ -302,7 +331,7 @@ async function excluirCelular(id){
     if(!confirmar) return;
 
     await fetch(`${API}/celulares/${id}`, { method:"DELETE" });
-    carregarCelulares();
+    await carregarCelulares();
 }
 
 function sair(){
