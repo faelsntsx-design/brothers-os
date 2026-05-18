@@ -175,80 +175,84 @@ app.get("/celulares", async (req, res) => {
     }
 });
 
-app.post("/celulares", async (req, res) => {
+app.post("/ordens", async (req, res) => {
     try{
-        const c = req.body;
+        const os = req.body;
         const id = Date.now();
 
         await pool.query(
-            `INSERT INTO celulares 
-            (
-                id,
-                marca,
-                modelo,
-                memoria,
-                cor,
-                estado,
-                valorcompra,
-                valorvenda,
-                status,
-                observacao,
-                comprador,
-                cpfcomprador,
-                telefonecomprador,
-                datacadastro,
-                datavenda,
-                garantia
-            )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+            `INSERT INTO ordens 
+            (id, cliente, telefone, aparelho, modelo, defeito, valor, valorpeca, maoobra, fornecedor, obspeca, status, pagamento, obs, data)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
             [
                 id,
-                c.marca || "",
-                c.modelo || "",
-                c.memoria || "",
-                c.cor || "",
-                c.estado || "",
-                c.valorCompra || "0",
-                c.valorVenda || "0",
-                "Disponível",
-                c.observacao || "",
-                "",
-                "",
-                "",
-                c.dataCadastro || "",
-                "",
-                "3 meses"
+                os.cliente || "",
+                os.telefone || "",
+                os.aparelho || "",
+                os.modelo || "",
+                os.defeito || "",
+                os.valor || "0",
+                os.valorPeca || "0",
+                os.maoObra || "0",
+                os.fornecedor || "",
+                os.obsPeca || "",
+                os.status || "Recebido",
+                os.pagamento || "Pendente",
+                os.obs || "",
+                os.data || ""
             ]
         );
 
-        res.json({
-            success:true,
-            id
-        });
+        res.json({ success:true, id });
 
     }catch(error){
         console.error(error);
-        res.status(500).json({
-            error:error.message
-        });
+        res.status(500).json({ error:error.message });
     }
 });
-app.put("/celulares/:id/vender", async (req, res) => {
+app.put("/ordens/:id", async (req, res) => {
     try{
+        const atual = await pool.query("SELECT * FROM ordens WHERE id=$1", [req.params.id]);
+
+        if(atual.rows.length === 0){
+            return res.status(404).json({ error:"Ordem não encontrada" });
+        }
+
+        const antigo = atual.rows[0];
+        const os = req.body;
+
         await pool.query(
-            `UPDATE celulares SET
-                status=$1,
-                comprador=$2,
-                cpfcomprador=$3,
-                telefonecomprador=$4,
-                datavenda=$5
-            WHERE id=$6`,
+            `UPDATE ordens SET
+                cliente=$1,
+                telefone=$2,
+                aparelho=$3,
+                modelo=$4,
+                defeito=$5,
+                valor=$6,
+                valorpeca=$7,
+                maoobra=$8,
+                fornecedor=$9,
+                obspeca=$10,
+                status=$11,
+                pagamento=$12,
+                obs=$13,
+                data=$14
+            WHERE id=$15`,
             [
-                "Vendido",
-                req.body.comprador || "",
-                req.body.cpfComprador || "",
-                req.body.telefoneComprador || "",
-                req.body.dataVenda || "",
+                os.cliente ?? antigo.cliente,
+                os.telefone ?? antigo.telefone,
+                os.aparelho ?? antigo.aparelho,
+                os.modelo ?? antigo.modelo,
+                os.defeito ?? antigo.defeito,
+                os.valor ?? antigo.valor,
+                os.valorPeca ?? antigo.valorpeca,
+                os.maoObra ?? antigo.maoobra,
+                os.fornecedor ?? antigo.fornecedor,
+                os.obsPeca ?? antigo.obspeca,
+                os.status ?? antigo.status,
+                os.pagamento ?? antigo.pagamento,
+                os.obs ?? antigo.obs,
+                os.data ?? antigo.data,
                 req.params.id
             ]
         );
@@ -257,9 +261,7 @@ app.put("/celulares/:id/vender", async (req, res) => {
 
     }catch(error){
         console.error(error);
-        res.status(500).json({
-            error:error.message
-        });
+        res.status(500).json({ error:error.message });
     }
 });
 
