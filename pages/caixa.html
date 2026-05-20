@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa | Brothers OS</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/caixa.css">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h1>BROTHERS</h1>
+            <span>OS SYSTEM</span>
+        </div>
+
+        <nav>
+            <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="ordens.html"><i data-lucide="wrench"></i> Ordens</a>
+            <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+            <a href="vendas.html"><i data-lucide="shopping-cart"></i> Vendas</a>
+            <a href="celulares.html"><i data-lucide="smartphone"></i> Celulares</a>
+            <a href="caixa.html" class="active"><i data-lucide="calculator"></i> Caixa</a>
+        </nav>
+
+        <button onclick="sair()" class="logout-btn">
+            <i data-lucide="log-out"></i>
+            Sair
+        </button>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <h2>Fechamento de Caixa</h2>
+        </div>
+
+        <div class="cards">
+            <div class="card"><h3 id="totalOS">R$ 0,00</h3><p>OS do dia</p></div>
+            <div class="card"><h3 id="totalVendas">R$ 0,00</h3><p>Vendas do dia</p></div>
+            <div class="card"><h3 id="totalCelulares">R$ 0,00</h3><p>Celulares vendidos</p></div>
+            <div class="card destaque"><h3 id="totalGeral">R$ 0,00</h3><p>Total do dia</p></div>
+        </div>
+
+        <div class="cards">
+            <div class="card"><h3 id="totalPix">R$ 0,00</h3><p>Pix</p></div>
+            <div class="card"><h3 id="totalDinheiro">R$ 0,00</h3><p>Dinheiro</p></div>
+            <div class="card"><h3 id="totalCartao">R$ 0,00</h3><p>Cartão</p></div>
+        </div>
+
+        <div class="panel">
+            <textarea id="obsFechamento" placeholder="Observações do fechamento..."></textarea>
+
+            <button onclick="fecharCaixa()" class="btn-fechar">
+                Fechar Caixa
+            </button>
+        </div>
+
+        <div class="panel">
+            <h3>Histórico de Fechamentos</h3>
+            <div id="listaFechamentos"></div>
+        </div>
+    </main>
+
+    <script src="../js/caixa.js"></script>
+</body>
+</html>

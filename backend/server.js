@@ -273,7 +273,43 @@ app.delete("/celulares/:id", async (req, res) => {
         res.status(500).json({ error:error.message });
     }
 });
+/* FECHAMENTOS */
 
+app.get("/fechamentos", async (req, res) => {
+    try{
+        const result = await pool.query("SELECT * FROM fechamentos ORDER BY id DESC");
+        res.json(result.rows);
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
+});
+
+app.post("/fechamentos", async (req, res) => {
+    try{
+        const f = req.body;
+
+        await pool.query(
+            `INSERT INTO fechamentos
+            (id, data, total, pix, dinheiro, cartao, observacao, horario)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+            [
+                f.id,
+                f.data,
+                f.total,
+                f.pix,
+                f.dinheiro,
+                f.cartao,
+                f.observacao,
+                f.horario
+            ]
+        );
+
+        res.json({ success:true });
+
+    }catch(error){
+        res.status(500).json({ error:error.message });
+    }
+});
 app.listen(PORT, () => {
     console.log(`BROTHERS API rodando na porta ${PORT}`);
 });
