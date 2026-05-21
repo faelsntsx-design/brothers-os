@@ -1,71 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="stylesheet" href="../css/premium.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caixa | Brothers OS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caixa • BROTHERS OS</title>
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/caixa.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/premium.css">
+<link rel="stylesheet" href="../css/caixa.css">
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-    <aside class="sidebar">
-        <div class="brand">
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">B</div>
+        <div>
             <h1>BROTHERS</h1>
-            <span>OS SYSTEM</span>
+            <p>Service OS</p>
         </div>
+    </div>
 
-        <nav>
-            <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-            <a href="ordens.html"><i data-lucide="wrench"></i> Ordens</a>
-            <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
-            <a href="vendas.html"><i data-lucide="shopping-cart"></i> Vendas</a>
-            <a href="celulares.html"><i data-lucide="smartphone"></i> Celulares</a>
-            <a href="caixa.html" class="active"><i data-lucide="calculator"></i> Caixa</a>
-        </nav>
+    <nav>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="ordens.html"><i data-lucide="clipboard-list"></i> Ordens</a>
+        <a href="clientes.html"><i data-lucide="users"></i> Clientes</a>
+        <a href="vendas.html"><i data-lucide="shopping-bag"></i> Vendas</a>
+        <a href="celulares.html"><i data-lucide="smartphone"></i> Celulares</a>
+        <a href="financeiro.html"><i data-lucide="wallet"></i> Financeiro</a>
+        <a href="caixa.html" class="active"><i data-lucide="calculator"></i> Caixa</a>
+        <a onclick="sair()"><i data-lucide="log-out"></i> Sair</a>
+    </nav>
+</aside>
 
-        <button onclick="sair()" class="logout-btn">
-            <i data-lucide="log-out"></i>
-            Sair
-        </button>
-    </aside>
+<main class="main">
 
-    <main class="main">
-        <div class="topbar">
-            <h2>Fechamento de Caixa</h2>
-        </div>
+<header class="hero-caixa">
+    <div>
+        <span class="eyebrow">BROTHERS CASHFLOW</span>
+        <h1>Fechamento de Caixa</h1>
+        <p>Controle diário completo de vendas, ordens e aparelhos vendidos.</p>
+    </div>
 
-        <div class="cards">
-            <div class="card"><h3 id="totalOS">R$ 0,00</h3><p>OS do dia</p></div>
-            <div class="card"><h3 id="totalVendas">R$ 0,00</h3><p>Vendas do dia</p></div>
-            <div class="card"><h3 id="totalCelulares">R$ 0,00</h3><p>Celulares vendidos</p></div>
-            <div class="card destaque"><h3 id="totalGeral">R$ 0,00</h3><p>Total do dia</p></div>
-        </div>
+    <button onclick="carregarCaixa()" class="refresh-btn">
+        <i data-lucide="refresh-cw"></i>
+        Atualizar
+    </button>
+</header>
 
-        <div class="cards">
-            <div class="card"><h3 id="totalPix">R$ 0,00</h3><p>Pix</p></div>
-            <div class="card"><h3 id="totalDinheiro">R$ 0,00</h3><p>Dinheiro</p></div>
-            <div class="card"><h3 id="totalCartao">R$ 0,00</h3><p>Cartão</p></div>
-        </div>
+<section class="caixa-grid">
+    <div class="caixa-card">
+        <span>Ordens do dia</span>
+        <h2 id="totalOS">R$ 0,00</h2>
+    </div>
 
-        <div class="panel">
-            <textarea id="obsFechamento" placeholder="Observações do fechamento..."></textarea>
+    <div class="caixa-card">
+        <span>Vendas do dia</span>
+        <h2 id="totalVendas">R$ 0,00</h2>
+    </div>
 
-            <button onclick="fecharCaixa()" class="btn-fechar">
-                Fechar Caixa
-            </button>
-        </div>
+    <div class="caixa-card">
+        <span>Celulares vendidos</span>
+        <h2 id="totalCelulares">R$ 0,00</h2>
+    </div>
 
-        <div class="panel">
-            <h3>Histórico de Fechamentos</h3>
-            <div id="listaFechamentos"></div>
-        </div>
-    </main>
+    <div class="caixa-card total-card">
+        <span>Total geral</span>
+        <h2 id="totalGeral">R$ 0,00</h2>
+    </div>
+</section>
 
-    <script src="../js/caixa.js"></script>
+<section class="pagamentos-grid">
+    <div class="mini-card">
+        <span>PIX</span>
+        <h3 id="totalPix">R$ 0,00</h3>
+    </div>
+
+    <div class="mini-card">
+        <span>DINHEIRO</span>
+        <h3 id="totalDinheiro">R$ 0,00</h3>
+    </div>
+
+    <div class="mini-card">
+        <span>CARTÃO</span>
+        <h3 id="totalCartao">R$ 0,00</h3>
+    </div>
+</section>
+
+<section class="painel-caixa">
+    <div class="painel-header">
+        <h3>Resumo do dia</h3>
+    </div>
+
+    <div id="resumoDia"></div>
+
+    <textarea id="obsFechamento" placeholder="Observações do fechamento..."></textarea>
+
+    <button class="btn-fechar" onclick="fecharCaixa()">
+        FECHAR CAIXA
+    </button>
+</section>
+
+<section class="painel-caixa">
+    <div class="painel-header">
+        <h3>Histórico de fechamentos</h3>
+    </div>
+
+    <div id="listaFechamentos"></div>
+</section>
+
+</main>
+
+<script src="../js/caixa.js"></script>
+<script>
+lucide.createIcons();
+</script>
+
 </body>
 </html>
